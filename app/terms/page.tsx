@@ -1,0 +1,3 @@
+import LegalPage from "../components/LegalPage";
+export const metadata = { title: "Terms of Service — ScareSafe" };
+export default function Terms() { return <LegalPage title="Terms of Service" updated="August 19, 2026"><h2>Using ScareSafe</h2><p>ScareSafe is a companion tool. Timings and community warnings may be incomplete or differ between movie versions, platforms, and edits.</p><h2>Community contributions</h2><p>Only submit information you have the right to share. Contributions may be reviewed, corrected, hidden, or removed to keep the community useful and safe.</p><h2>Subscriptions</h2><p>Paid features are managed through the App Store and remain subject to Apple&apos;s purchase and subscription terms.</p></LegalPage>; }
