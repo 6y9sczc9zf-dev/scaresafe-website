@@ -12,8 +12,6 @@ const { d1, r2 } = hostingConfig;
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 
 const localBindingConfig = {
-  main: "./worker/index.ts",
-  compatibility_flags: ["nodejs_compat"],
   d1_databases: d1
     ? [
         {
@@ -43,8 +41,9 @@ export default defineConfig(async () => {
   // Wrangler snapshots its log path while the Cloudflare plugin is imported.
   const isLocalPreview = process.env.LOCAL_PREVIEW === "1";
   const cloudflarePlugin = isLocalPreview
-    ? null
-    : (await import("@cloudflare/vite-plugin")).cloudflare({
+      ? null
+      : (await import("@cloudflare/vite-plugin")).cloudflare({
+        configPath: "./wrangler.jsonc",
         viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
         config: localBindingConfig,
       });
