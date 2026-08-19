@@ -14,7 +14,7 @@ test("renders the public ScareSafe landing page", async () => {
   const html = await response.text();
   assert.match(html, /Know the scares before they happen/);
   assert.match(html, /Every scare mapped helps another horror fan/);
-  assert.match(html, /ScareSafe Until Dawn/i);
+  assert.match(html, /ScareSafe Till Dawn/i);
   assert.doesNotMatch(html, /ScareSafe Admin|Admin dashboard|\/admin/);
 });
 

@@ -3,33 +3,69 @@
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 
-const features = [
-  { icon: "◫", title: "Discover Horror", copy: "Find movies, explore horror details, and understand what kind of experience awaits." },
-  { icon: "⌁", title: "Scare Mapping", copy: "Community-powered scare information helps you prepare without spoiling the movie." },
-  { icon: "◎", title: "Watch Together", copy: "Sync ScareSafe with your movie and let Ghostie guide you through the experience." },
+const featureCards = [
+  { number: "01", title: "Discover", copy: "Know what kind of horror experience awaits." },
+  { number: "02", title: "Map", copy: "Community warnings, without story spoilers." },
+  { number: "03", title: "Watch", copy: "Sync the movie and let Ghostie guide you." },
 ];
-const screens = ["Discover", "Movie Detail", "Scare Timeline", "Sync Start", "Fear Meter", "Profile", "Till Dawn"];
-
-function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  const reduce = useReducedMotion();
-  return <motion.div className={className} initial={reduce ? false : { opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-70px" }} transition={{ duration: .7, ease: [0.22, 1, 0.36, 1] }}>{children}</motion.div>;
-}
-
-function MiniPhone({ label, index }: { label: string; index: number }) {
-  return <article className="mini-phone" aria-label={`${label} app screen preview`}><div className="mini-island" /><div className={`mini-art art-${index % 4}`}><span>ScareSafe</span><strong>{label}</strong></div><div className="mini-lines"><i /><i /><i /></div><div className="mini-card"><span>{index % 2 ? "Spoiler-free details" : "Ghostie has your back"}</span><b>→</b></div></article>;
-}
 
 export default function Landing() {
-  return <main className="site-shell" id="top">
-    <nav className="nav glass" aria-label="Primary navigation"><a className="brand" href="#top" aria-label="ScareSafe home"><Image src="/brand/ghostie-icon.png" alt="" width={36} height={36} priority /><span>ScareSafe</span></a><div className="nav-links"><a href="#features">Features</a><a href="#how-it-works">How It Works</a><a href="#community">Community</a><a href="#till-dawn">Till Dawn</a></div><a className="nav-cta" href="#download">Download on App Store</a></nav>
-    <section className="hero"><div className="aurora" aria-hidden="true" /><motion.div className="hero-copy" initial={{ opacity: 0, x: -32 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .85 }}><p className="eyebrow">Your spoiler-free horror companion</p><h1>Know the scares<br />before they happen.</h1><p className="hero-subtitle">A spoiler-free horror companion that helps you enjoy scary movies your way.</p><div className="hero-actions"><a className="button primary" id="download" href="#showcase">Download on the App Store</a><a className="button secondary" href="#how-it-works">See How It Works</a></div><div className="trust-row"><span><i /> Spoiler-free</span><span><i /> Community powered</span><span><i /> Made for horror fans</span></div></motion.div><div className="hero-visual" aria-label="ScareSafe app preview"><div className="ghostie-glow" aria-hidden="true" /><Image className="hero-ghostie" src="/brand/ghostie-floating.gif" alt="Ghostie, the friendly ScareSafe guide" width={520} height={390} unoptimized priority /><div className="phone" aria-hidden="true"><div className="dynamic-island" /><div className="phone-screen"><div className="screen-topline"><span>ScareSafe</span><b>•••</b></div><div className="poster-placeholder"><span>NOW WATCHING</span><strong>The Quiet House</strong><small>Horror · Mystery</small></div><div className="timeline-card"><div className="timeline-heading"><span>Enjoy the movie 🍿</span><b>42:18</b></div><div className="timeline-track"><i /><em /></div><div className="timeline-controls"><button tabIndex={-1}>−15</button><button className="play" tabIndex={-1}>Ⅱ</button><button tabIndex={-1}>+15</button></div></div><div className="warning-pill"><span>Ghostie is watching with you</span><b>Safe</b></div></div></div></div></section>
-    <div className="hero-rule" aria-hidden="true" />
-    <section className="problem section" id="features"><Reveal><p className="section-kicker">Horror, on your terms</p><h2>We know horror movies are fake.<br /><em>But sometimes our nervous system doesn&apos;t agree.</em></h2><p className="section-lede">Fear is what makes horror exciting. But a sudden shock can also turn a movie you want to love into something you avoid. ScareSafe keeps the tension and gives you just enough control to stay in the story.</p></Reveal></section>
-    <section className="section" id="how-it-works"><Reveal className="section-heading"><p className="section-kicker">How it works</p><h2>One quiet guide. Three simple steps.</h2></Reveal><div className="feature-grid">{features.map((feature, index) => <Reveal key={feature.title} className="feature-card glass"><span className="feature-number">0{index + 1}</span><div className="feature-icon">{feature.icon}</div><h3>{feature.title}</h3><p>{feature.copy}</p></Reveal>)}</div></section>
-    <section className="ghostie-section section"><Reveal className="ghostie-copy"><p className="section-kicker">Meet Ghostie</p><h2>Your guide through horror movies.</h2><p>Ghostie floats beside the experience—not over it. Friendly warnings, helpful prompts, and a little personality make scary nights feel less intimidating and more fun.</p><div className="theme-pills"><span>Classic</span><span>Until Dawn</span><span>Legendary</span></div></Reveal><Reveal className="ghostie-stage"><div className="orbit orbit-one" /><div className="orbit orbit-two" /><Image src="/brand/ghostie-blink.gif" alt="Ghostie blinking" width={500} height={380} unoptimized /></Reveal></section>
-    <section className="showcase section" id="showcase"><Reveal className="section-heading"><p className="section-kicker">Inside ScareSafe</p><h2>A calmer way into the dark.</h2><p>From discovery to the final scene, every screen is designed to inform without spoiling.</p></Reveal><div className="screen-rail">{screens.map((screen, index) => <MiniPhone key={screen} label={screen} index={index} />)}</div></section>
-    <section className="community section" id="community"><Reveal className="community-card glass"><div><p className="section-kicker">Built together</p><h2>Every scare mapped helps another horror fan.</h2><p>Contribute timestamps, help verify warnings, share your Fear Meter, and make the next person&apos;s movie night a little more comfortable.</p></div><div className="community-stats"><div><strong>24k+</strong><span>scares mapped</span></div><div><strong>8.7k</strong><span>movies tracked</span></div><div><strong>∞</strong><span>nerves saved</span></div></div></Reveal></section>
-    <section className="till-dawn section" id="till-dawn"><div className="forest" aria-hidden="true" /><Reveal className="till-dawn-card"><div className="premium-badge">SCARESAFE UNTIL DAWN</div><h2>Support ScareSafe.<br />Unlock the full experience.</h2><p>Go deeper with exclusive themes, premium features, an ad-free experience, and a direct way to support independent development.</p><ul><li>Remove ads</li><li>Premium features</li><li>Exclusive themes</li><li>Support development</li></ul><a className="button gold" href="#download">Explore Until Dawn</a></Reveal><Reveal className="gold-ghostie"><Image src="/brand/ghostie-gold.png" alt="Golden premium Ghostie" width={560} height={360} /></Reveal></section>
-    <footer><a className="brand footer-brand" href="#top"><Image src="/brand/ghostie-icon.png" alt="" width={34} height={34} /><span>ScareSafe</span></a><p>Enjoy the fear. Skip the shock.</p><div><a href="#download">Download on App Store</a><a href="/privacy">Privacy Policy</a><a href="/terms">Terms of Service</a><a href="mailto:hello@safescare.app">Contact</a></div><small>© {new Date().getFullYear()} ScareSafe. All rights reserved.</small></footer>
-  </main>;
+  const reduceMotion = useReducedMotion();
+  return (
+    <main className="compact-site" id="top">
+      <div className="compact-aurora" aria-hidden="true" />
+      <nav className="compact-nav glass" aria-label="Primary navigation">
+        <a className="brand" href="#top" aria-label="ScareSafe home">
+          <Image src="/brand/ghostie-icon.png" alt="" width={35} height={35} priority />
+          <span>ScareSafe</span>
+        </a>
+        <div className="compact-nav-note">Spoiler-free horror companion</div>
+        <a className="nav-cta" href="#download">App Store</a>
+      </nav>
+
+      <section className="compact-stage">
+        <motion.div className="compact-copy" initial={reduceMotion ? false : { opacity: 0, x: -28 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .75 }}>
+          <p className="eyebrow">Horror, on your terms</p>
+          <h1>Know the scares<br />before they happen.</h1>
+          <p className="compact-lede">ScareSafe prepares you for jumpscares without ruining the movie—so you can enjoy the fear, your way.</p>
+          <div className="hero-actions">
+            <a className="button primary" id="download" href="mailto:hello@safescare.app?subject=ScareSafe%20App%20Store">Download on the App Store</a>
+            <a className="button secondary" href="mailto:hello@safescare.app">Contact</a>
+          </div>
+          <div className="compact-features" aria-label="How ScareSafe works">
+            {featureCards.map((feature) => (
+              <article key={feature.title}>
+                <span>{feature.number}</span>
+                <div><h2>{feature.title}</h2><p>{feature.copy}</p></div>
+              </article>
+            ))}
+          </div>
+        </motion.div>
+
+        <motion.div className="compact-visual" initial={reduceMotion ? false : { opacity: 0, scale: .96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: .85, delay: .08 }}>
+          <div className="compact-glow" aria-hidden="true" />
+          <Image className="compact-ghostie" src="/brand/ghostie-floating.gif" alt="Ghostie, your friendly ScareSafe guide" width={440} height={330} unoptimized priority />
+          <div className="compact-phone" aria-label="ScareSafe movie timeline preview">
+            <div className="compact-island" />
+            <div className="compact-screen">
+              <div className="compact-screen-top"><b>ScareSafe</b><span>•••</span></div>
+              <div className="compact-poster"><small>NOW WATCHING</small><strong>The Quiet House</strong><span>Horror · Mystery</span></div>
+              <div className="compact-timeline glass">
+                <div><b>Enjoy the movie 🍿</b><span>42:18</span></div>
+                <i><em /></i>
+                <small>Next scare in 04:12</small>
+              </div>
+            </div>
+          </div>
+          <div className="compact-float-card community-float glass"><span>Community powered</span><strong>24k+ scares mapped</strong></div>
+          <div className="compact-float-card premium-float glass"><span>ScareSafe Till Dawn</span><strong>Unlock the full experience ✦</strong></div>
+        </motion.div>
+      </section>
+
+      <footer className="compact-footer">
+        <p>Every scare mapped helps another horror fan.</p>
+        <div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><span>© {new Date().getFullYear()} ScareSafe</span></div>
+      </footer>
+    </main>
+  );
 }
