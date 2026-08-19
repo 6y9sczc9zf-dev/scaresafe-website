@@ -25,7 +25,6 @@ export default function Landing() {
           <Image src="/brand/ghostie-icon.png" alt="" width={35} height={35} priority />
           <span>ScareSafe</span>
         </a>
-        <div className="compact-nav-note">Spoiler-free horror companion</div>
         <a className="nav-cta" href="#download">App Store</a>
       </nav>
 
@@ -46,6 +45,13 @@ export default function Landing() {
               </article>
             ))}
           </div>
+          <aside className="compact-about" aria-labelledby="about-scaresafe">
+            <p className="compact-about-label">About us</p>
+            <div>
+              <h2 id="about-scaresafe">Made by horror fans, for horror fans.</h2>
+              <p>ScareSafe helps people enjoy scary movies with confidence, powered by a community that maps the moments worth knowing about.</p>
+            </div>
+          </aside>
         </motion.div>
 
         <motion.div className="compact-visual" initial={reduceMotion ? false : { opacity: 0, scale: .96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: .85, delay: .08 }}>
