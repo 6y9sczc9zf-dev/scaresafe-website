@@ -9,6 +9,12 @@ const featureCards = [
   { number: "03", title: "Watch", copy: "Sync the movie and let Ghostie guide you." },
 ];
 
+const appScreens = [
+  { src: "/screenshots/discover.png", alt: "ScareSafe discover screen" },
+  { src: "/screenshots/movie-detail.png", alt: "ScareSafe movie detail and timeline screen" },
+  { src: "/screenshots/jumpscare-alert.png", alt: "ScareSafe incoming jump scare warning" },
+];
+
 export default function Landing() {
   const reduceMotion = useReducedMotion();
   return (
@@ -48,13 +54,18 @@ export default function Landing() {
           <div className="compact-phone" aria-label="ScareSafe movie timeline preview">
             <div className="compact-island" />
             <div className="compact-screen">
-              <div className="compact-screen-top"><b>ScareSafe</b><span>•••</span></div>
-              <div className="compact-poster"><small>NOW WATCHING</small><strong>The Quiet House</strong><span>Horror · Mystery</span></div>
-              <div className="compact-timeline glass">
-                <div><b>Enjoy the movie 🍿</b><span>42:18</span></div>
-                <i><em /></i>
-                <small>Next scare in 04:12</small>
-              </div>
+              {appScreens.map((screen, index) => (
+                <Image
+                  key={screen.src}
+                  className={`compact-slide compact-slide-${index + 1}`}
+                  src={screen.src}
+                  alt={screen.alt}
+                  fill
+                  sizes="(max-width: 560px) 225px, 285px"
+                  priority={index === 0}
+                />
+              ))}
+              <div className="compact-slide-dots" aria-hidden="true"><i /><i /><i /></div>
             </div>
           </div>
           <div className="compact-float-card community-float glass"><span>Community powered</span><strong>24k+ scares mapped</strong></div>
