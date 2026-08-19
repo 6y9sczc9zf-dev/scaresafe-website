@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+@font-face { font-family:"BATMIP Book"; src:url("/fonts/BATMIP-Book.otf") format("opentype"); font-style:normal; font-weight:100 900; font-display:swap; }
+@font-face { font-family:"BATMIP Book"; src:url("/fonts/BATMIP-Italic.otf") format("opentype"); font-style:italic; font-weight:100 900; font-display:swap; }
+
 :root { --night:#06080d; --ink:#f7efe4; --muted:#a9acb6; --orange:#ff9d2e; --hot:#ff7134; }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; background:var(--night); }
