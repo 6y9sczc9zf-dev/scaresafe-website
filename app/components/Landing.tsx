@@ -35,19 +35,25 @@ export default function Landing() {
             <a className="button secondary" href="mailto:contactsafescare@gmail.com">Contact</a>
           </div>
           <div className="compact-features" aria-label="How ScareSafe works">
-            {featureCards.map((feature) => (
-              <article key={feature.title}>
-                <div><h2>{feature.title}</h2><p>{feature.copy}</p></div>
-              </article>
+            {featureCards.map((feature, index) => (
+              <motion.article
+                key={feature.title}
+                initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: .45, delay: .28 + index * .09 }}
+                whileHover={reduceMotion ? undefined : { y: -4, scale: 1.015 }}
+              >
+                <i aria-hidden="true" /><div><h2>{feature.title}</h2><p>{feature.copy}</p></div>
+              </motion.article>
             ))}
           </div>
-          <aside className="compact-about" aria-labelledby="about-scaresafe">
+          <motion.aside className="compact-about" aria-labelledby="about-scaresafe" initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: .6, delay: .55 }}>
             <p className="compact-about-label">About us</p>
             <div>
               <h2 id="about-scaresafe">Made by horror fans, for horror fans.</h2>
               <p>ScareSafe helps people enjoy scary movies with confidence, powered by a community that maps the moments worth knowing about.</p>
             </div>
-          </aside>
+          </motion.aside>
         </motion.div>
 
         <motion.div className="compact-visual" initial={reduceMotion ? false : { opacity: 0, scale: .96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: .85, delay: .08 }}>
@@ -70,8 +76,8 @@ export default function Landing() {
               <div className="compact-slide-dots" aria-hidden="true"><i /><i /><i /></div>
             </div>
           </div>
-          <div className="compact-float-card community-float glass"><span>Community powered</span><strong>24k+ scares mapped</strong></div>
-          <div className="compact-float-card premium-float glass"><span>ScareSafe Till Dawn</span><strong>Unlock the full experience ✦</strong></div>
+          <motion.div className="compact-float-card community-float glass" initial={reduceMotion ? false : { opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .55, delay: .65 }}><span>Community powered</span><strong>24k+ scares mapped</strong></motion.div>
+          <motion.div className="compact-float-card premium-float glass" initial={reduceMotion ? false : { opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .55, delay: .75 }}><span>ScareSafe Till Dawn</span><strong>Unlock the full experience ✦</strong></motion.div>
         </motion.div>
       </section>
 
