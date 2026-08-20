@@ -26,7 +26,11 @@ export default function Landing() {
           <h1>Know the scares<br />before they happen.</h1>
           <p className="compact-lede">ScareSafe prepares you for jumpscares without ruining the movie—so you can enjoy the fear, your way.</p>
           <div className="hero-actions">
-            <a className="button primary" id="download" href="mailto:hello@safescare.app?subject=ScareSafe%20App%20Store">Download on the App Store</a>
+            <a className="app-store-link" id="download" href="mailto:hello@safescare.app?subject=ScareSafe%20App%20Store" aria-label="Download ScareSafe on the App Store">
+              <span className="app-store-badge">
+                <Image src="/brand/app-store-badge.jpg" alt="Download on the App Store" width={1024} height={512} />
+              </span>
+            </a>
             <a className="button secondary" href="mailto:hello@safescare.app">Contact</a>
           </div>
           <div className="compact-features" aria-label="How ScareSafe works">
