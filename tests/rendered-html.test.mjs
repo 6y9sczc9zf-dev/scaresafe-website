@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 async function request(path = "/") {
@@ -30,4 +31,13 @@ test("blocks admin routes from crawlers", async () => {
   const body = await response.text();
   assert.match(body, /Disallow: \/admin/);
   assert.match(body, /Disallow: \/api\/admin/);
+});
+
+test("keeps browser jumpscare creation behind the verified admin route", async () => {
+  const dashboard = await readFile(new URL("../app/components/AdminDashboard.tsx", import.meta.url), "utf8");
+  const route = await readFile(new URL("../app/api/admin/action/route.ts", import.meta.url), "utf8");
+  assert.match(dashboard, /Add verified jumpscare/);
+  assert.match(route, /verifyAdmin/);
+  assert.match(route, /kind === "createJumpscare"/);
+  assert.match(route, /submit_scare_mapping_proposal/);
 });

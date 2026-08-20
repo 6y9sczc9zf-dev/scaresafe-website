@@ -22,6 +22,9 @@ export default function AdminDashboard({ email }: { email: string }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
   const [editingMovie, setEditingMovie] = useState<Movie | null>(null);
+  const [showCreateScare, setShowCreateScare] = useState(false);
+  const [newScareMovieID, setNewScareMovieID] = useState("");
+  const [newScareRuntime, setNewScareRuntime] = useState("");
   async function load() { const response = await fetch("/api/admin/data", { cache: "no-store" }); if (response.status === 403) { router.replace("/admin/login"); return; } setData(await response.json()); }
   useEffect(() => {
     let active = true;
@@ -34,6 +37,54 @@ export default function AdminDashboard({ email }: { email: string }) {
   }, [router]);
   const movies = useMemo(() => (data?.movies ?? []).filter(movie => `${movie.title ?? ""} ${movie.id}`.toLowerCase().includes(query.toLowerCase())), [data, query]);
   async function review(id: string, action: string) { setBusy(id + action); setNotice(""); const response = await fetch("/api/admin/action", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind: "reviewProposal", id, action }) }); const body = await response.json(); setBusy(null); if (!response.ok) { setNotice(body.error ?? "Action failed."); return; } setNotice(`Proposal ${action}d.`); await load(); }
+  function openCreateJumpscare() {
+    const firstMovie = data?.movies[0];
+    setNewScareMovieID(firstMovie ? String(firstMovie.id) : "");
+    setNewScareRuntime(firstMovie?.runtime_minutes ? String(firstMovie.runtime_minutes) : "");
+    setNotice("");
+    setShowCreateScare(true);
+  }
+  function selectScareMovie(movieID: string) {
+    setNewScareMovieID(movieID);
+    const movie = data?.movies.find(item => String(item.id) === movieID);
+    setNewScareRuntime(movie?.runtime_minutes ? String(movie.runtime_minutes) : "");
+  }
+  async function createJumpscare(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!data) return;
+    const movie = data.movies.find(item => String(item.id) === newScareMovieID);
+    const form = new FormData(event.currentTarget);
+    const runtimeMinutes = Number(newScareRuntime);
+    const hours = Number(form.get("hours"));
+    const minutes = Number(form.get("minutes"));
+    const seconds = Number(form.get("seconds"));
+    if (!movie) { setNotice("Choose a movie."); return; }
+    if (!Number.isInteger(runtimeMinutes) || runtimeMinutes < 1 || runtimeMinutes > 240) { setNotice("Runtime must be between 1 and 240 minutes."); return; }
+    if (![hours, minutes, seconds].every(Number.isInteger) || hours < 0 || hours > 4 || minutes < 0 || minutes > 59 || seconds < 0 || seconds > 59) { setNotice("Enter a valid timestamp using 0–4 hours and 0–59 minutes and seconds."); return; }
+    const timestampSeconds = hours * 3600 + minutes * 60 + seconds;
+    if (timestampSeconds > runtimeMinutes * 60) { setNotice("The jumpscare time must fall within the movie runtime."); return; }
+    setBusy("create-jumpscare");
+    setNotice("");
+    const response = await fetch("/api/admin/action", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        kind: "createJumpscare",
+        movieId: movie.id,
+        movieTitle: movie.title || `Movie ${movie.id}`,
+        runtimeSeconds: runtimeMinutes * 60,
+        timestampMs: timestampSeconds * 1000,
+        intensity: form.get("intensity"),
+        details: form.get("details"),
+      }),
+    });
+    const body = await response.json();
+    setBusy(null);
+    if (!response.ok) { setNotice(body.error ?? "The jumpscare could not be added."); return; }
+    setShowCreateScare(false);
+    setNotice(`Jumpscare added to ${movie.title || `Movie ${movie.id}`} at ${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.`);
+    await load();
+  }
   async function saveMovie(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); if (!editingMovie) return; const form = new FormData(event.currentTarget); setBusy("movie"); const response = await fetch("/api/admin/action", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ kind:"updateMovie", id:editingMovie.id, title:form.get("title"), releaseDate:form.get("releaseDate"), runtimeMinutes:Number(form.get("runtime")) || null, genres:String(form.get("genres") || "").split(",").map(x=>x.trim()).filter(Boolean) }) }); const body=await response.json(); setBusy(null); if(!response.ok){setNotice(body.error ?? "Movie could not be updated.");return;} setEditingMovie(null);setNotice("Movie updated.");await load(); }
   async function setRole(userId:string, role:string){setBusy(userId);const response=await fetch("/api/admin/action",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({kind:"setRole",userId,role})});const body=await response.json();setBusy(null);if(!response.ok){setNotice(body.error??"Role could not be updated.");return;}setNotice(`Role changed to ${role}.`);await load();}
   async function logout() { await fetch("/api/admin/logout", { method: "POST" }); router.replace("/admin/login"); router.refresh(); }
@@ -42,9 +93,24 @@ export default function AdminDashboard({ email }: { email: string }) {
     <aside className="admin-sidebar"><a className="brand admin-brand" href="/admin"><Image src="/brand/ghostie-icon.png" alt="" width={39} height={39} /><span>ScareSafe<br /><small>ADMIN</small></span></a><nav aria-label="Admin sections">{tabs.map(item => <button key={item} className={tab === item ? "active" : ""} onClick={() => setTab(item)}><span>{({ Overview: "⌂", Movies: "▣", Jumpscares: "⚡", Moderation: "◇", Users: "◎" } as Record<string,string>)[item]}</span>{item}</button>)}</nav><div className="admin-user"><span>{email}</span><button onClick={logout}>Sign out</button></div></aside>
     <Image className="admin-flying-ghostie" src="/brand/ghostie-floating.gif" alt="" width={76} height={58} unoptimized aria-hidden="true" />
     <section className="admin-main"><header><div><p>Private content workspace</p><h1>{tab}</h1></div><div className="live-state"><i /> Connected to ScareSafe</div></header>{notice && <div className="admin-notice" role="status">{notice}</div>}{!data ? <div className="admin-loading glass">Loading secure workspace…</div> : <>
-      {tab === "Overview" && <div className="admin-overview"><div className="metric-grid"><Metric label="Mapped movies" value={data.movies.length} detail="Latest 100 loaded" /><Metric label="Scare proposals" value={data.proposals.length} detail={`${data.proposals.filter(x => ["pending","awaiting_validation","admin_review"].includes(x.state)).length} need attention`} /><Metric label="Open reports" value={data.reports.length} detail="Community queue" /><Metric label="Contributors" value={data.contributors.length} detail="Top contributors" /></div><div className="admin-grid"><Panel title="Recent activity"><Activity proposals={data.proposals.slice(0, 6)} /></Panel><Panel title="Top contributors"><div className="leader-list">{data.contributors.slice(0, 6).map((person, index) => <div key={index}><b>{index < 3 ? ["🥇","🥈","🥉"][index] : `#${index + 1}`}</b><span>{person.display_name ?? "ScareSafe member"}</span><strong>{person.total_contributions ?? person.contribution_count ?? 0}</strong></div>)}</div></Panel></div></div>}
+      {tab === "Overview" && <div className="admin-overview"><div className="metric-grid"><Metric label="Mapped movies" value={data.movies.length} detail="Available in admin" /><Metric label="Scare proposals" value={data.proposals.length} detail={`${data.proposals.filter(x => ["pending","awaiting_validation","admin_review"].includes(x.state)).length} need attention`} /><Metric label="Open reports" value={data.reports.length} detail="Community queue" /><Metric label="Contributors" value={data.contributors.length} detail="Top contributors" /></div><div className="admin-grid"><Panel title="Recent activity"><Activity proposals={data.proposals.slice(0, 6)} /></Panel><Panel title="Top contributors"><div className="leader-list">{data.contributors.slice(0, 6).map((person, index) => <div key={index}><b>{index < 3 ? ["🥇","🥈","🥉"][index] : `#${index + 1}`}</b><span>{person.display_name ?? "ScareSafe member"}</span><strong>{person.total_contributions ?? person.contribution_count ?? 0}</strong></div>)}</div></Panel></div></div>}
       {tab === "Movies" && <><div className="admin-toolbar"><input aria-label="Search movies" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search title or movie ID…" /><span>{movies.length} movies</span></div><div className="data-table"><div className="table-head"><span>Movie</span><span>Release</span><span>Runtime</span><span>Genres</span><span /></div>{movies.map(movie => <div className="table-row" key={movie.id}><span><strong>{movie.title || "Untitled movie"}</strong><small>#{movie.id}</small></span><span>{movie.release_date || "—"}</span><span>{movie.runtime_minutes ? `${movie.runtime_minutes} min` : "—"}</span><span>{movie.genres?.join(", ") || "—"}</span><button className="edit-button" onClick={()=>setEditingMovie(movie)}>Edit</button></div>)}</div>{editingMovie&&<form className="movie-editor glass" onSubmit={saveMovie}><div><h2>Edit movie</h2><button type="button" onClick={()=>setEditingMovie(null)}>Close</button></div><label>Title<input name="title" defaultValue={editingMovie.title} required /></label><div className="editor-fields"><label>Release date<input name="releaseDate" type="date" defaultValue={editingMovie.release_date} /></label><label>Runtime (minutes)<input name="runtime" type="number" min="1" max="240" defaultValue={editingMovie.runtime_minutes} /></label></div><label>Genres<input name="genres" defaultValue={editingMovie.genres?.join(", ")} placeholder="Horror, Thriller" /></label><button className="button primary" disabled={busy==="movie"}>{busy==="movie"?"Saving…":"Save changes"}</button></form>}</>}
-      {tab === "Jumpscares" && <div className="proposal-list">{data.proposals.map(proposal => <article className="proposal-card" key={proposal.id}><div className="proposal-time">{time(proposal.proposed_timestamp_ms)}</div><div><span className={`status ${proposal.state}`}>{proposal.state.replaceAll("_", " ")}</span><h3>Movie #{proposal.movie_id} · {proposal.proposal_type.replaceAll("_", " ")}</h3><p>{proposal.details || "No spoiler-free description supplied."}</p><small>{proposal.proposed_intensity || "unrated"} · {proposal.positive_validations} correct / {proposal.negative_validations} incorrect</small></div><div className="proposal-actions"><button disabled={!!busy} onClick={() => review(proposal.id, "approve")}>Approve</button><button disabled={!!busy} onClick={() => review(proposal.id, "reject")}>Reject</button><button disabled={!!busy} onClick={() => review(proposal.id, "archive")}>Archive</button></div></article>)}</div>}
+      {tab === "Jumpscares" && <>
+        <div className="admin-section-actions">
+          <div><strong>Scare Mapping</strong><span>Add a verified timestamp or review community submissions.</span></div>
+          <button className="button primary" type="button" onClick={openCreateJumpscare}>＋ Add jumpscare</button>
+        </div>
+        {showCreateScare && <form className="admin-jumpscare-form glass" onSubmit={createJumpscare}>
+          <div className="admin-form-heading"><div><p className="section-kicker">Verified immediately</p><h2>Add a jumpscare</h2></div><button type="button" onClick={() => setShowCreateScare(false)}>Close</button></div>
+          <label className="admin-form-wide">Movie<select value={newScareMovieID} onChange={event => selectScareMovie(event.target.value)} required><option value="" disabled>Select a movie…</option>{data.movies.map(movie => <option value={movie.id} key={movie.id}>{movie.title || "Untitled movie"} · #{movie.id}</option>)}</select></label>
+          <label>Runtime in minutes<input value={newScareRuntime} onChange={event => setNewScareRuntime(event.target.value)} type="number" min="1" max="240" inputMode="numeric" required /></label>
+          <fieldset className="admin-time-fields"><legend>Jumpscare timestamp</legend><label>Hours<input name="hours" type="number" min="0" max="4" defaultValue="0" inputMode="numeric" required /></label><span>:</span><label>Minutes<input name="minutes" type="number" min="0" max="59" defaultValue="0" inputMode="numeric" required /></label><span>:</span><label>Seconds<input name="seconds" type="number" min="0" max="59" defaultValue="0" inputMode="numeric" required /></label></fieldset>
+          <fieldset className="admin-intensity"><legend>Intensity</legend><label><input type="radio" name="intensity" value="mild" defaultChecked /><span>Mild</span></label><label><input type="radio" name="intensity" value="major" /><span>Major</span></label></fieldset>
+          <label className="admin-form-wide">Spoiler-free description<textarea name="details" maxLength={1000} rows={3} placeholder="Optional — briefly describe the scare without revealing the plot." /></label>
+          <div className="admin-form-submit"><small>This is recorded in moderation history and published as verified under your admin account.</small><button className="button primary" disabled={busy === "create-jumpscare"}>{busy === "create-jumpscare" ? "Adding…" : "Add verified jumpscare"}</button></div>
+        </form>}
+        <div className="proposal-list">{data.proposals.map(proposal => <article className="proposal-card" key={proposal.id}><div className="proposal-time">{time(proposal.proposed_timestamp_ms)}</div><div><span className={`status ${proposal.state}`}>{proposal.state.replaceAll("_", " ")}</span><h3>Movie #{proposal.movie_id} · {proposal.proposal_type.replaceAll("_", " ")}</h3><p>{proposal.details || "No spoiler-free description supplied."}</p><small>{proposal.proposed_intensity || "unrated"} · {proposal.positive_validations} correct / {proposal.negative_validations} incorrect</small></div><div className="proposal-actions"><button disabled={!!busy} onClick={() => review(proposal.id, "approve")}>Approve</button><button disabled={!!busy} onClick={() => review(proposal.id, "reject")}>Reject</button><button disabled={!!busy} onClick={() => review(proposal.id, "archive")}>Archive</button></div></article>)}</div>
+      </>}
       {tab === "Moderation" && <div className="report-list">{data.reports.length ? data.reports.map(report => <article key={report.id}><span className="report-icon">!</span><div><h3>{report.reason} · {report.target_type}</h3><p>{report.target_summary || "Community report awaiting review."}</p><small>Reported by {report.reporter_name || "member"} · {new Date(report.created_at).toLocaleDateString()}</small></div><span className="status">{report.status}</span></article>) : <Empty title="No open reports" copy="The moderation queue is clear." />}</div>}
       {tab === "Users" && <div className="admin-grid"><Panel title="Contributor reputation"><div className="leader-list">{data.contributors.map((person, index) => <div key={index}><b>#{index + 1}</b><span>{person.display_name ?? "ScareSafe member"}</span><strong>{person.total_contributions ?? person.contribution_count ?? 0} contributions</strong></div>)}</div></Panel><Panel title="Role management">{data.users?.length?<div className="role-list">{data.users.map(user=><div key={user.user_id}><span><b>{user.display_name}</b><small>{user.contribution_count} contributions · {user.app_role}</small></span><select aria-label={`Role for ${user.display_name}`} value={user.app_role} disabled={busy===user.user_id} onChange={e=>setRole(user.user_id,e.target.value)}><option value="member">Member</option><option value="moderator">Moderator</option><option value="admin">Admin</option></select></div>)}</div>:<Empty title="Apply the CMS migration" copy="The secure user-role endpoint becomes available after the included website admin migration is applied." />}</Panel></div>}
     </>}</section>
