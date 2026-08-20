@@ -10,9 +10,9 @@ const featureCards = [
 ];
 
 const appScreens = [
-  { src: "/screenshots/discover.png", alt: "ScareSafe discover screen" },
-  { src: "/screenshots/movie-detail.png", alt: "ScareSafe movie detail and timeline screen" },
-  { src: "/screenshots/jumpscare-alert.png", alt: "ScareSafe incoming jump scare warning" },
+  { src: "/screenshots/discover.png", alt: "ScareSafe movie search screen with Ghostie" },
+  { src: "/screenshots/movie-detail.png", alt: "ScareSafe movie details and synchronized timeline" },
+  { src: "/screenshots/jumpscare-alert.png", alt: "ScareSafe community scare sheet" },
 ];
 
 export default function Landing() {
