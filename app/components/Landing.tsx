@@ -22,6 +22,7 @@ export default function Landing() {
       <div className="compact-aurora" aria-hidden="true" />
       <section className="compact-stage">
         <motion.div className="compact-copy" initial={reduceMotion ? false : { opacity: 0, x: -28 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .75 }}>
+          <Image className="compact-logo" src="/brand/scaresafe-logo.png" alt="ScareSafe" width={360} height={159} priority />
           <p className="eyebrow">Horror, on your terms</p>
           <h1>Know the scares<br />before they happen.</h1>
           <p className="compact-lede">ScareSafe prepares you for jumpscares without ruining the movie—so you can enjoy the fear, your way.</p>
