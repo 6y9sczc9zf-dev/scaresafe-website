@@ -20,14 +20,6 @@ export default function Landing() {
   return (
     <main className="compact-site" id="top">
       <div className="compact-aurora" aria-hidden="true" />
-      <nav className="compact-nav glass" aria-label="Primary navigation">
-        <a className="brand" href="#top" aria-label="ScareSafe home">
-          <Image src="/brand/ghostie-icon.png" alt="" width={35} height={35} priority />
-          <span>ScareSafe</span>
-        </a>
-        <a className="nav-cta" href="#download">App Store</a>
-      </nav>
-
       <section className="compact-stage">
         <motion.div className="compact-copy" initial={reduceMotion ? false : { opacity: 0, x: -28 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .75 }}>
           <p className="eyebrow">Horror, on your terms</p>
