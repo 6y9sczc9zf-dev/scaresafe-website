@@ -4,9 +4,9 @@ import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 
 const featureCards = [
-  { number: "01", title: "Discover", copy: "Know what kind of horror experience awaits." },
-  { number: "02", title: "Map", copy: "Community warnings, without story spoilers." },
-  { number: "03", title: "Watch", copy: "Sync the movie and let Ghostie guide you." },
+  { title: "Discover", copy: "Know what kind of horror experience awaits." },
+  { title: "Map", copy: "Community warnings, without story spoilers." },
+  { title: "Watch", copy: "Sync the movie and let Ghostie guide you." },
 ];
 
 const appScreens = [
@@ -36,7 +36,6 @@ export default function Landing() {
           <div className="compact-features" aria-label="How ScareSafe works">
             {featureCards.map((feature) => (
               <article key={feature.title}>
-                <span>{feature.number}</span>
                 <div><h2>{feature.title}</h2><p>{feature.copy}</p></div>
               </article>
             ))}
