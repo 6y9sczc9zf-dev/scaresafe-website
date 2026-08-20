@@ -25,6 +25,11 @@ export default function AdminDashboard({ email }: { email: string }) {
   const [showCreateScare, setShowCreateScare] = useState(false);
   const [newScareMovieID, setNewScareMovieID] = useState("");
   const [newScareRuntime, setNewScareRuntime] = useState("");
+  const [movieSource, setMovieSource] = useState<"saved" | "catalogue">("saved");
+  const [catalogueQuery, setCatalogueQuery] = useState("");
+  const [catalogueMovies, setCatalogueMovies] = useState<Movie[]>([]);
+  const [catalogueBusy, setCatalogueBusy] = useState(false);
+  const [selectedCatalogueMovie, setSelectedCatalogueMovie] = useState<Movie | null>(null);
   async function load() { const response = await fetch("/api/admin/data", { cache: "no-store" }); if (response.status === 403) { router.replace("/admin/login"); return; } setData(await response.json()); }
   useEffect(() => {
     let active = true;
@@ -42,7 +47,27 @@ export default function AdminDashboard({ email }: { email: string }) {
     setNewScareMovieID(firstMovie ? String(firstMovie.id) : "");
     setNewScareRuntime(firstMovie?.runtime_minutes ? String(firstMovie.runtime_minutes) : "");
     setNotice("");
+    setMovieSource("saved");
+    setSelectedCatalogueMovie(null);
     setShowCreateScare(true);
+  }
+  async function searchCatalogue() {
+    const query = catalogueQuery.trim();
+    if (query.length < 2) { setNotice("Enter at least two characters to search."); return; }
+    setCatalogueBusy(true);
+    setNotice("");
+    const response = await fetch(`/api/admin/movie-search?q=${encodeURIComponent(query)}`, { cache: "no-store" });
+    const body = await response.json();
+    setCatalogueBusy(false);
+    if (!response.ok) { setNotice(body.error ?? "The movie catalogue could not be searched."); return; }
+    setCatalogueMovies(body.movies ?? []);
+    if (!(body.movies ?? []).length) setNotice("No compatible movies were found. Try another title.");
+  }
+  function chooseCatalogueMovie(movie: Movie) {
+    setSelectedCatalogueMovie(movie);
+    setNewScareMovieID(String(movie.id));
+    setNewScareRuntime(movie.runtime_minutes ? String(movie.runtime_minutes) : "");
+    setNotice("");
   }
   function selectScareMovie(movieID: string) {
     setNewScareMovieID(movieID);
@@ -52,7 +77,7 @@ export default function AdminDashboard({ email }: { email: string }) {
   async function createJumpscare(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!data) return;
-    const movie = data.movies.find(item => String(item.id) === newScareMovieID);
+    const movie = data.movies.find(item => String(item.id) === newScareMovieID) ?? selectedCatalogueMovie;
     const form = new FormData(event.currentTarget);
     const runtimeMinutes = Number(newScareRuntime);
     const hours = Number(form.get("hours"));
@@ -91,7 +116,6 @@ export default function AdminDashboard({ email }: { email: string }) {
 
   return <main className="admin-shell">
     <aside className="admin-sidebar"><a className="brand admin-brand" href="/admin"><Image src="/brand/ghostie-icon.png" alt="" width={39} height={39} /><span>ScareSafe<br /><small>ADMIN</small></span></a><nav aria-label="Admin sections">{tabs.map(item => <button key={item} className={tab === item ? "active" : ""} onClick={() => setTab(item)}><span>{({ Overview: "⌂", Movies: "▣", Jumpscares: "⚡", Moderation: "◇", Users: "◎" } as Record<string,string>)[item]}</span>{item}</button>)}</nav><div className="admin-user"><span>{email}</span><button onClick={logout}>Sign out</button></div></aside>
-    <Image className="admin-flying-ghostie" src="/brand/ghostie-floating.gif" alt="" width={76} height={58} unoptimized aria-hidden="true" />
     <section className="admin-main"><header><div><p>Private content workspace</p><h1>{tab}</h1></div><div className="live-state"><i /> Connected to ScareSafe</div></header>{notice && <div className="admin-notice" role="status">{notice}</div>}{!data ? <div className="admin-loading glass">Loading secure workspace…</div> : <>
       {tab === "Overview" && <div className="admin-overview"><div className="metric-grid"><Metric label="Mapped movies" value={data.movies.length} detail="Available in admin" /><Metric label="Scare proposals" value={data.proposals.length} detail={`${data.proposals.filter(x => ["pending","awaiting_validation","admin_review"].includes(x.state)).length} need attention`} /><Metric label="Open reports" value={data.reports.length} detail="Community queue" /><Metric label="Contributors" value={data.contributors.length} detail="Top contributors" /></div><div className="admin-grid"><Panel title="Recent activity"><Activity proposals={data.proposals.slice(0, 6)} /></Panel><Panel title="Top contributors"><div className="leader-list">{data.contributors.slice(0, 6).map((person, index) => <div key={index}><b>{index < 3 ? ["🥇","🥈","🥉"][index] : `#${index + 1}`}</b><span>{person.display_name ?? "ScareSafe member"}</span><strong>{person.total_contributions ?? person.contribution_count ?? 0}</strong></div>)}</div></Panel></div></div>}
       {tab === "Movies" && <><div className="admin-toolbar"><input aria-label="Search movies" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search title or movie ID…" /><span>{movies.length} movies</span></div><div className="data-table"><div className="table-head"><span>Movie</span><span>Release</span><span>Runtime</span><span>Genres</span><span /></div>{movies.map(movie => <div className="table-row" key={movie.id}><span><strong>{movie.title || "Untitled movie"}</strong><small>#{movie.id}</small></span><span>{movie.release_date || "—"}</span><span>{movie.runtime_minutes ? `${movie.runtime_minutes} min` : "—"}</span><span>{movie.genres?.join(", ") || "—"}</span><button className="edit-button" onClick={()=>setEditingMovie(movie)}>Edit</button></div>)}</div>{editingMovie&&<form className="movie-editor glass" onSubmit={saveMovie}><div><h2>Edit movie</h2><button type="button" onClick={()=>setEditingMovie(null)}>Close</button></div><label>Title<input name="title" defaultValue={editingMovie.title} required /></label><div className="editor-fields"><label>Release date<input name="releaseDate" type="date" defaultValue={editingMovie.release_date} /></label><label>Runtime (minutes)<input name="runtime" type="number" min="1" max="240" defaultValue={editingMovie.runtime_minutes} /></label></div><label>Genres<input name="genres" defaultValue={editingMovie.genres?.join(", ")} placeholder="Horror, Thriller" /></label><button className="button primary" disabled={busy==="movie"}>{busy==="movie"?"Saving…":"Save changes"}</button></form>}</>}
@@ -102,7 +126,8 @@ export default function AdminDashboard({ email }: { email: string }) {
         </div>
         {showCreateScare && <form className="admin-jumpscare-form glass" onSubmit={createJumpscare}>
           <div className="admin-form-heading"><div><p className="section-kicker">Verified immediately</p><h2>Add a jumpscare</h2></div><button type="button" onClick={() => setShowCreateScare(false)}>Close</button></div>
-          <label className="admin-form-wide">Movie<select value={newScareMovieID} onChange={event => selectScareMovie(event.target.value)} required><option value="" disabled>Select a movie…</option>{data.movies.map(movie => <option value={movie.id} key={movie.id}>{movie.title || "Untitled movie"} · #{movie.id}</option>)}</select></label>
+          <div className="admin-form-wide admin-movie-source"><span>Choose movie</span><div><button type="button" className={movieSource === "saved" ? "active" : ""} onClick={() => { setMovieSource("saved"); setSelectedCatalogueMovie(null); const first = data.movies[0]; setNewScareMovieID(first ? String(first.id) : ""); setNewScareRuntime(first?.runtime_minutes ? String(first.runtime_minutes) : ""); }}>Saved in ScareSafe</button><button type="button" className={movieSource === "catalogue" ? "active" : ""} onClick={() => { setMovieSource("catalogue"); setNewScareMovieID(""); setNewScareRuntime(""); }}>Search all movies</button></div></div>
+          {movieSource === "saved" ? <label className="admin-form-wide">Movie<select value={newScareMovieID} onChange={event => selectScareMovie(event.target.value)} required><option value="" disabled>Select a movie…</option>{data.movies.map(movie => <option value={movie.id} key={movie.id}>{movie.title || "Untitled movie"} · #{movie.id}</option>)}</select></label> : <div className="admin-form-wide admin-catalogue-picker"><div className="catalogue-search"><input aria-label="Search all movies" value={catalogueQuery} onChange={event => setCatalogueQuery(event.target.value)} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); void searchCatalogue(); } }} placeholder="Search by movie title…" /><button type="button" className="button primary" onClick={() => void searchCatalogue()} disabled={catalogueBusy}>{catalogueBusy ? "Searching…" : "Search"}</button></div>{selectedCatalogueMovie && <div className="catalogue-selected"><span>Selected</span><strong>{selectedCatalogueMovie.title}</strong><small>{selectedCatalogueMovie.release_date?.slice(0, 4) || "Year unknown"} · #{selectedCatalogueMovie.id}</small></div>}<div className="catalogue-results">{catalogueMovies.map(movie => <button type="button" className={selectedCatalogueMovie?.id === movie.id ? "active" : ""} key={movie.id} onClick={() => chooseCatalogueMovie(movie)}><span><strong>{movie.title}</strong><small>{movie.release_date?.slice(0, 4) || "Year unknown"}{movie.runtime_minutes ? ` · ${movie.runtime_minutes} min` : ""}</small></span><b>{selectedCatalogueMovie?.id === movie.id ? "Selected" : "Choose"}</b></button>)}</div></div>}
           <label>Runtime in minutes<input value={newScareRuntime} onChange={event => setNewScareRuntime(event.target.value)} type="number" min="1" max="240" inputMode="numeric" required /></label>
           <fieldset className="admin-time-fields"><legend>Jumpscare timestamp</legend><label>Hours<input name="hours" type="number" min="0" max="4" defaultValue="0" inputMode="numeric" required /></label><span>:</span><label>Minutes<input name="minutes" type="number" min="0" max="59" defaultValue="0" inputMode="numeric" required /></label><span>:</span><label>Seconds<input name="seconds" type="number" min="0" max="59" defaultValue="0" inputMode="numeric" required /></label></fieldset>
           <fieldset className="admin-intensity"><legend>Intensity</legend><label><input type="radio" name="intensity" value="mild" defaultChecked /><span>Mild</span></label><label><input type="radio" name="intensity" value="major" /><span>Major</span></label></fieldset>

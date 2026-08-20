@@ -41,3 +41,12 @@ test("keeps browser jumpscare creation behind the verified admin route", async (
   assert.match(route, /kind === "createJumpscare"/);
   assert.match(route, /submit_scare_mapping_proposal/);
 });
+
+test("keeps full-catalogue movie search admin-only", async () => {
+  const dashboard = await readFile(new URL("../app/components/AdminDashboard.tsx", import.meta.url), "utf8");
+  const route = await readFile(new URL("../app/api/admin/movie-search/route.ts", import.meta.url), "utf8");
+  assert.match(dashboard, /Search all movies/);
+  assert.match(route, /verifyAdmin/);
+  assert.match(route, /functions\/v1\/tvdb\/search/);
+  assert.match(route, /TheMovieDB\.com/);
+});
