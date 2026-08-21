@@ -32,7 +32,7 @@ export default function Landing() {
                 <Image src="/brand/app-store-badge.jpg" alt="Download on the App Store" width={1024} height={512} />
               </span>
             </a>
-            <a className="button secondary" href="mailto:contactsafescare@gmail.com">Contact</a>
+            <a className="button secondary" href="/support">Support & FAQ</a>
           </div>
           <div className="compact-features" aria-label="How ScareSafe works">
             {featureCards.map((feature, index) => (
@@ -83,7 +83,7 @@ export default function Landing() {
 
       <footer className="compact-footer">
         <p>Every scare mapped helps another horror fan.</p>
-        <div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><span>© {new Date().getFullYear()} ScareSafe</span></div>
+        <div><a href="/support">Support</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><span>© {new Date().getFullYear()} ScareSafe</span></div>
       </footer>
     </main>
   );
