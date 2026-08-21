@@ -32,6 +32,11 @@ export async function POST(request: Request) {
       result = await supabaseRequest("/rest/v1/rpc/admin_moderate_content", admin.token, { method: "POST", body: JSON.stringify({ p_target_type: "candidate", p_target_id: body.id, p_action: "restore", p_reason: body.note || "Restored from the ScareSafe admin website", p_report_id: null }) });
       if (result.ok) result = await supabaseRequest("/rest/v1/rpc/admin_verify_candidate", admin.token, { method: "POST", body: JSON.stringify({ p_candidate_id: body.id, p_reason: body.note || "Approved from the ScareSafe admin website" }) });
     }
+  } else if (body.kind === "removeCandidate" && body.id) {
+    result = await supabaseRequest("/rest/v1/rpc/admin_moderate_content", admin.token, {
+      method: "POST",
+      body: JSON.stringify({ p_target_type: "candidate", p_target_id: body.id, p_action: "remove", p_reason: body.reason || "Removed from the ScareSafe admin website", p_report_id: null }),
+    });
   } else if (body.kind === "createJumpscare") {
     const movieId = Number(body.movieId);
     const runtimeSeconds = Number(body.runtimeSeconds);
