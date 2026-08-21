@@ -27,13 +27,13 @@ export async function POST(request: Request) {
       body: JSON.stringify({ p_candidate_id: body.id, p_timestamp_ms: timestampMs, p_intensity: intensity, p_description: description }),
     });
     if (result.ok && state === "rejected") {
-      result = await supabaseRequest("/rest/v1/rpc/admin_moderate_content", admin.token, { method: "POST", body: JSON.stringify({ p_target_type: "candidate", p_target_id: body.id, p_action: "remove", p_reason: body.note || "Overridden from the ScareSafe admin website", p_report_id: null }) });
+      result = await supabaseRequest("/rest/v1/rpc/moderate_content", admin.token, { method: "POST", body: JSON.stringify({ p_target_type: "candidate", p_target_id: body.id, p_action: "remove", p_reason: body.note || "Overridden from the ScareSafe admin website", p_report_id: null }) });
     } else if (result.ok && state === "verified") {
-      result = await supabaseRequest("/rest/v1/rpc/admin_moderate_content", admin.token, { method: "POST", body: JSON.stringify({ p_target_type: "candidate", p_target_id: body.id, p_action: "restore", p_reason: body.note || "Restored from the ScareSafe admin website", p_report_id: null }) });
+      result = await supabaseRequest("/rest/v1/rpc/moderate_content", admin.token, { method: "POST", body: JSON.stringify({ p_target_type: "candidate", p_target_id: body.id, p_action: "restore", p_reason: body.note || "Restored from the ScareSafe admin website", p_report_id: null }) });
       if (result.ok) result = await supabaseRequest("/rest/v1/rpc/admin_verify_candidate", admin.token, { method: "POST", body: JSON.stringify({ p_candidate_id: body.id, p_reason: body.note || "Approved from the ScareSafe admin website" }) });
     }
   } else if (body.kind === "removeCandidate" && body.id) {
-    result = await supabaseRequest("/rest/v1/rpc/admin_moderate_content", admin.token, {
+    result = await supabaseRequest("/rest/v1/rpc/moderate_content", admin.token, {
       method: "POST",
       body: JSON.stringify({ p_target_type: "candidate", p_target_id: body.id, p_action: "remove", p_reason: body.reason || "Removed from the ScareSafe admin website", p_report_id: null }),
     });

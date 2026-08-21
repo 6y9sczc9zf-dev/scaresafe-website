@@ -62,6 +62,7 @@ test("keeps movie-scoped jumpscare edits and overrides behind admin verification
   assert.match(actionRoute, /verifyAdmin/);
   assert.match(actionRoute, /admin_update_jumpscare_candidate/);
   assert.match(actionRoute, /admin_verify_candidate/);
-  assert.match(actionRoute, /admin_moderate_content/);
+  assert.match(actionRoute, /moderate_content/);
+  assert.match(actionRoute, /removeCandidate/);
   assert.match(dataRoute, /verification_candidates/);
 });
