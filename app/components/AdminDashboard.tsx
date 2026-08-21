@@ -53,7 +53,7 @@ export default function AdminDashboard({ email }: { email: string }) {
     const ids = new Set([...data.candidates.map(item => item.movie_id), ...data.proposals.map(item => item.movie_id)]);
     return [...ids].map(id => movieByID.get(id) ?? { id, title: `Movie ${id}` }).sort((a, b) => (a.title ?? "").localeCompare(b.title ?? ""));
   }, [data, movieByID]);
-  const visibleCandidates = useMemo(() => (data?.candidates ?? []).filter(item => scareMovieID === "all" || String(item.movie_id) === scareMovieID), [data, scareMovieID]);
+  const visibleCandidates = useMemo(() => (data?.candidates ?? []).filter(item => item.verification_state !== "rejected" && (scareMovieID === "all" || String(item.movie_id) === scareMovieID)), [data, scareMovieID]);
   const visibleProposals = useMemo(() => (data?.proposals ?? []).filter(item => scareMovieID === "all" || String(item.movie_id) === scareMovieID), [data, scareMovieID]);
   async function review(id: string, action: string) { setBusy(id + action); setNotice(""); const response = await fetch("/api/admin/action", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind: "reviewProposal", id, action }) }); const body = await response.json(); setBusy(null); if (!response.ok) { setNotice(body.error ?? "Action failed."); return; } setNotice(`Proposal ${action}d.`); await load(); }
   async function saveCandidate(event: React.FormEvent<HTMLFormElement>, candidate: Candidate) {

@@ -57,6 +57,7 @@ test("keeps movie-scoped jumpscare edits and overrides behind admin verification
   const dataRoute = await readFile(new URL("../app/api/admin/data/route.ts", import.meta.url), "utf8");
   assert.match(dashboard, /Manage by movie/);
   assert.match(dashboard, /Published jumpscares/);
+  assert.match(dashboard, /verification_state !== "rejected"/);
   assert.match(dashboard, /Save & approve/);
   assert.match(actionRoute, /verifyAdmin/);
   assert.match(actionRoute, /admin_update_jumpscare_candidate/);
