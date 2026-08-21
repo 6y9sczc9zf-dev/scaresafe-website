@@ -50,3 +50,17 @@ test("keeps full-catalogue movie search admin-only", async () => {
   assert.match(route, /functions\/v1\/tvdb\/search/);
   assert.match(route, /TheMovieDB\.com/);
 });
+
+test("keeps movie-scoped jumpscare edits and overrides behind admin verification", async () => {
+  const dashboard = await readFile(new URL("../app/components/AdminDashboard.tsx", import.meta.url), "utf8");
+  const actionRoute = await readFile(new URL("../app/api/admin/action/route.ts", import.meta.url), "utf8");
+  const dataRoute = await readFile(new URL("../app/api/admin/data/route.ts", import.meta.url), "utf8");
+  assert.match(dashboard, /Manage by movie/);
+  assert.match(dashboard, /Published jumpscares/);
+  assert.match(dashboard, /Save & approve/);
+  assert.match(actionRoute, /verifyAdmin/);
+  assert.match(actionRoute, /admin_update_jumpscare_candidate/);
+  assert.match(actionRoute, /admin_verify_candidate/);
+  assert.match(actionRoute, /admin_moderate_content/);
+  assert.match(dataRoute, /verification_candidates/);
+});

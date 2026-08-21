@@ -8,6 +8,30 @@ export async function POST(request: Request) {
   let result: Response;
   if (body.kind === "reviewProposal" && body.id && ["approve", "reject", "archive", "lock", "unlock"].includes(body.action)) {
     result = await supabaseRequest("/rest/v1/rpc/admin_review_scare_mapping_proposal", admin.token, { method: "POST", body: JSON.stringify({ p_proposal_id: body.id, p_action: body.action, p_note: body.note || null, p_timestamp_ms: body.timestampMs ?? null, p_intensity: body.intensity ?? null, p_category: body.category ?? null }) });
+  } else if (body.kind === "updateCandidate" && body.id) {
+    const timestampMs = Number(body.timestampMs);
+    const intensity = String(body.intensity || "").toLowerCase();
+    const description = String(body.description || "").trim().slice(0, 1000) || null;
+    const state = body.state == null ? null : String(body.state);
+    if (!Number.isInteger(timestampMs) || timestampMs < 0 || timestampMs > 14400000) {
+      return NextResponse.json({ error: "Timestamp must be between 0 and 4 hours." }, { status: 400 });
+    }
+    if (!["mild", "major"].includes(intensity)) {
+      return NextResponse.json({ error: "Choose Mild or Major intensity." }, { status: 400 });
+    }
+    if (state && !["verified", "rejected"].includes(state)) {
+      return NextResponse.json({ error: "Unsupported override state." }, { status: 400 });
+    }
+    result = await supabaseRequest("/rest/v1/rpc/admin_update_jumpscare_candidate", admin.token, {
+      method: "POST",
+      body: JSON.stringify({ p_candidate_id: body.id, p_timestamp_ms: timestampMs, p_intensity: intensity, p_description: description }),
+    });
+    if (result.ok && state === "rejected") {
+      result = await supabaseRequest("/rest/v1/rpc/admin_moderate_content", admin.token, { method: "POST", body: JSON.stringify({ p_target_type: "candidate", p_target_id: body.id, p_action: "remove", p_reason: body.note || "Overridden from the ScareSafe admin website", p_report_id: null }) });
+    } else if (result.ok && state === "verified") {
+      result = await supabaseRequest("/rest/v1/rpc/admin_moderate_content", admin.token, { method: "POST", body: JSON.stringify({ p_target_type: "candidate", p_target_id: body.id, p_action: "restore", p_reason: body.note || "Restored from the ScareSafe admin website", p_report_id: null }) });
+      if (result.ok) result = await supabaseRequest("/rest/v1/rpc/admin_verify_candidate", admin.token, { method: "POST", body: JSON.stringify({ p_candidate_id: body.id, p_reason: body.note || "Approved from the ScareSafe admin website" }) });
+    }
   } else if (body.kind === "createJumpscare") {
     const movieId = Number(body.movieId);
     const runtimeSeconds = Number(body.runtimeSeconds);
