@@ -11,7 +11,7 @@ const faqs = [
 
 export default function SupportPage() {
   return <main className="support-shell">
-    <nav className="support-nav"><Link className="brand" href="/"><Image src="/brand/ghostie-icon.png" alt="" width={35} height={35} /><span>ScareSafe</span></Link><Link href="/">Back home</Link></nav>
+    <nav className="support-nav"><Link className="brand" href="/"><Image src="/brand/ghostie-icon.png" alt="" width={35} height={35} /><span>ScareSafe</span></Link><a href="/">Back home</a></nav>
     <article className="support-card">
       <p className="section-kicker">ScareSafe support</p>
       <h1>How can we help?</h1>
